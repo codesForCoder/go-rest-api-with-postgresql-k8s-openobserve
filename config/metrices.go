@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -25,10 +26,20 @@ func SetupMetrics() func() {
 	if err != nil {
 		panic(err)
 	}
+	// Default: 15 seconds
+	interval := 15000
+	if value := os.Getenv("OTEL_METRIC_EXPORT_INTERVAL"); value != "" {
+		parsed, err := strconv.Atoi(value)
+		if err != nil || parsed <= 0 {
+			log.Printf("Invalid OTEL_METRIC_EXPORT_INTERVAL=%q; using default 15000ms", value)
+		} else {
+			interval = parsed
+		}
+	}
 
 	reader := sdkmetric.NewPeriodicReader(
 		exporter,
-		sdkmetric.WithInterval(15*time.Second),
+		sdkmetric.WithInterval(time.Duration(interval)*time.Millisecond),
 	)
 
 	mp := sdkmetric.NewMeterProvider(

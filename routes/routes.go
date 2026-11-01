@@ -15,6 +15,8 @@ func SetupRouter() *gin.Engine {
 	r.Use(otelgin.Middleware("go-crud"))
 	// Register the IPLogger middleware
 	r.Use(middlewares.IPLogger())
+	// Then register the trace ID response middleware
+	r.Use(middlewares.TraceIDResponse())
 
 	r.GET("/products", controllers.FindProducts)
 	r.POST("/products", controllers.CreateProduct)
